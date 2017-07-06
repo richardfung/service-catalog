@@ -19,6 +19,7 @@ package validation
 import (
 	apivalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/pkg/api/v1"
 
 	sc "github.com/kubernetes-incubator/service-catalog/pkg/apis/servicecatalog"
 )
@@ -51,24 +52,32 @@ func validateBrokerSpec(spec *sc.BrokerSpec, fldPath *field.Path) field.ErrorLis
 
 	// if there is auth information, check it to make sure that it's properly formatted
 	if spec.AuthInfo != nil {
-		// TODO: when we start supporting additional auth schemes, this code will have to accommodate
-		// the new schemes
-		basicAuthSecret := spec.AuthInfo.BasicAuthSecret
-		if basicAuthSecret != nil {
-			for _, msg := range apivalidation.ValidateNamespaceName(basicAuthSecret.Namespace, false /* prefix */) {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("authInfo", "basicAuthSecret", "namespace"), basicAuthSecret.Namespace, msg))
-			}
-
-			for _, msg := range apivalidation.NameIsDNSSubdomain(basicAuthSecret.Name, false /* prefix */) {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("authInfo", "basicAuthSecret", "name"), basicAuthSecret.Name, msg))
-			}
-		} else {
-			// if there's no BasicAuthSecret, then we need to error because there are no other auth
-			// options right now
+		if spec.AuthInfo.BasicAuthSecret == nil && spec.AuthInfo.OAuthSecret == nil {
+			// no known auth options found
 			allErrs = append(
 				allErrs,
-				field.Required(fldPath.Child("authInfo", "basicAuthSecret"), "a basic auth secret is required"),
+				field.Required(fldPath.Child("authInfo"), "basicAuthSecret or oAuthSecret required"),
 			)
+		} else if spec.AuthInfo.BasicAuthSecret != nil && spec.AuthInfo.OAuthSecret != nil {
+			allErrs = append(
+				allErrs,
+				field.Invalid(fldPath.Child("authInfo"), spec.AuthInfo, "At most one AuthInfo type allowed"),
+			)
+		} else {
+			var secret *v1.ObjectReference
+			if spec.AuthInfo.BasicAuthSecret != nil {
+				secret = spec.AuthInfo.BasicAuthSecret
+			} else if spec.AuthInfo.OAuthSecret != nil {
+				//check redundant but for clarity
+				secret = spec.AuthInfo.OAuthSecret
+			}
+			for _, msg := range apivalidation.ValidateNamespaceName(secret.Namespace, false /* prefix */) {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("authInfo", "secret", "namespace"), secret.Namespace, msg))
+			}
+
+			for _, msg := range apivalidation.NameIsDNSSubdomain(secret.Name, false /* prefix */) {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("authInfo", "secret", "name"), secret.Name, msg))
+			}
 		}
 	}
 

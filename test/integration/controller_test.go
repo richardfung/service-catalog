@@ -30,8 +30,8 @@ import (
 	// avoid error `no kind is registered for the type metav1.ListOptions`
 	_ "k8s.io/client-go/pkg/api/install"
 
-	osb "github.com/pmorie/go-open-service-broker-client/v2"
-	fakeosb "github.com/pmorie/go-open-service-broker-client/v2/fake"
+	osb "github.com/rifung/go-open-service-broker-client/v2"
+	fakeosb "github.com/rifung/go-open-service-broker-client/v2/fake"
 
 	"github.com/kubernetes-incubator/service-catalog/pkg/apis/servicecatalog"
 	"github.com/kubernetes-incubator/service-catalog/pkg/apis/servicecatalog/v1alpha1"

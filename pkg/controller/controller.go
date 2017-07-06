@@ -18,12 +18,13 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
-	osb "github.com/pmorie/go-open-service-broker-client/v2"
+	osb "github.com/rifung/go-open-service-broker-client/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -372,37 +373,66 @@ func (c *controller) getServiceClassPlanAndBrokerForBinding(instance *v1alpha1.I
 // returns an error. If the AuthSecret field is nil, empty values are
 // returned.
 func getAuthCredentialsFromBroker(client kubernetes.Interface, broker *v1alpha1.Broker) (*osb.AuthConfig, error) {
-	// TODO: when we start supporting additional auth schemes, this code will have to accommodate
-	// the new schemes
 	if broker.Spec.AuthInfo == nil {
 		return nil, nil
 	}
 
-	basicAuthSecret := broker.Spec.AuthInfo.BasicAuthSecret
+	if broker.Spec.AuthInfo.BasicAuthSecret != nil {
+		basicAuthSecret := broker.Spec.AuthInfo.BasicAuthSecret
 
-	authSecret, err := client.Core().Secrets(basicAuthSecret.Namespace).Get(basicAuthSecret.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
+		authSecret, err := client.Core().Secrets(basicAuthSecret.Namespace).Get(basicAuthSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		usernameBytes, ok := authSecret.Data["username"]
+		if !ok {
+			return nil, errors.New("auth secret didn't contain username")
+		}
+
+		passwordBytes, ok := authSecret.Data["password"]
+		if !ok {
+			return nil, errors.New("auth secret didn't contain password")
+		}
+
+		authConfig := &osb.AuthConfig{
+			BasicAuthConfig: &osb.BasicAuthConfig{
+				Username: string(usernameBytes),
+				Password: string(passwordBytes),
+			},
+		}
+		return authConfig, nil
+	} else if broker.Spec.AuthInfo.OAuthSecret != nil {
+		oAuthSecret := broker.Spec.AuthInfo.OAuthSecret
+
+		authSecret, err := client.Core().Secrets(oAuthSecret.Namespace).Get(oAuthSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		oAuthJWT, ok := authSecret.Data["jwt"]
+		if !ok {
+			return nil, errors.New("auth secret didn't contain JWT")
+		}
+		scopesBytes, _ := authSecret.Data["scopes"]
+		if !ok {
+			return nil, errors.New("auth secret didn't contain scopes")
+		}
+		var scopes []string
+		err = json.Unmarshal(scopesBytes, &scopes)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshalling scopes %s: %v", string(scopesBytes), err)
+		}
+
+		authConfig := &osb.AuthConfig{
+			OAuthConfig: &osb.OAuthConfig{
+				OAuthJWT: oAuthJWT,
+				Scopes: scopes,
+			},
+		}
+		return authConfig, nil
 	}
-
-	usernameBytes, ok := authSecret.Data["username"]
-	if !ok {
-		return nil, fmt.Errorf("auth secret didn't contain username")
-	}
-
-	passwordBytes, ok := authSecret.Data["password"]
-	if !ok {
-		return nil, fmt.Errorf("auth secret didn't contain password")
-	}
-
-	authConfig := &osb.AuthConfig{
-		BasicAuthConfig: &osb.BasicAuthConfig{
-			Username: string(usernameBytes),
-			Password: string(passwordBytes),
-		},
-	}
-
-	return authConfig, nil
+	return nil, nil
 }
 
 // convertCatalog converts a service broker catalog into an array of ServiceClasses

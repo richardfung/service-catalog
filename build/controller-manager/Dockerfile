@@ -14,6 +14,8 @@
 
 FROM debian
 
+RUN apt update
+RUN apt install ca-certificates -y
 ADD tmp/controller-manager /opt/services/
 
 ENTRYPOINT ["/opt/services/controller-manager" ]

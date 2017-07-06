@@ -311,6 +311,12 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Ref:         ref("k8s.io/client-go/pkg/api/v1.ObjectReference"),
 							},
 						},
+						"oAuthSecret": {
+							SchemaProps: spec.SchemaProps{
+								Description: "OAuthSecret is a reference to a Secret which contains the information nneeded to authenticate using OAuth. It should contain the contents of the JSON Web Token (JWT) and Scopes if any",
+								Ref:         ref("k8s.io/client-go/pkg/api/v1.ObjectReference"),
+							},
+						},
 					},
 				},
 			},

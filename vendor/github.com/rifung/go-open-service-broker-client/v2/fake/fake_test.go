@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pmorie/go-open-service-broker-client/v2"
-	"github.com/pmorie/go-open-service-broker-client/v2/fake"
+	"github.com/rifung/go-open-service-broker-client/v2"
+	"github.com/rifung/go-open-service-broker-client/v2/fake"
 )
 
 func catalogResponse() *v2.CatalogResponse {

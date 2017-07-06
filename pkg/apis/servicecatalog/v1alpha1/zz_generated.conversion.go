@@ -253,6 +253,7 @@ func Convert_servicecatalog_Broker_To_v1alpha1_Broker(in *servicecatalog.Broker,
 
 func autoConvert_v1alpha1_BrokerAuthInfo_To_servicecatalog_BrokerAuthInfo(in *BrokerAuthInfo, out *servicecatalog.BrokerAuthInfo, s conversion.Scope) error {
 	out.BasicAuthSecret = (*v1.ObjectReference)(unsafe.Pointer(in.BasicAuthSecret))
+	out.OAuthSecret = (*v1.ObjectReference)(unsafe.Pointer(in.OAuthSecret))
 	return nil
 }
 
@@ -262,6 +263,7 @@ func Convert_v1alpha1_BrokerAuthInfo_To_servicecatalog_BrokerAuthInfo(in *Broker
 
 func autoConvert_servicecatalog_BrokerAuthInfo_To_v1alpha1_BrokerAuthInfo(in *servicecatalog.BrokerAuthInfo, out *BrokerAuthInfo, s conversion.Scope) error {
 	out.BasicAuthSecret = (*v1.ObjectReference)(unsafe.Pointer(in.BasicAuthSecret))
+	out.OAuthSecret = (*v1.ObjectReference)(unsafe.Pointer(in.OAuthSecret))
 	return nil
 }
 

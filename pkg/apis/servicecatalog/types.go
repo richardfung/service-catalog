@@ -63,6 +63,10 @@ type BrokerAuthInfo struct {
 	// BasicAuthSecret is a reference to a Secret containing auth information the
 	// catalog should use to authenticate to this Broker using basic auth.
 	BasicAuthSecret *v1.ObjectReference
+	// OAuthSecret is a reference to a Secret which contains the information
+	// nneeded to authenticate using OAuth. It should contain the contents of
+	// the JSON Web Token (JWT) and Scopes if any
+	OAuthSecret *v1.ObjectReference
 }
 
 // BrokerStatus represents the current status of a Broker.

@@ -60,7 +60,7 @@ import (
 	"github.com/kubernetes-incubator/service-catalog/pkg/controller"
 
 	"github.com/golang/glog"
-	osb "github.com/pmorie/go-open-service-broker-client/v2"
+	osb "github.com/rifung/go-open-service-broker-client/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

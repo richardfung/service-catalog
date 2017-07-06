@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	osb "github.com/pmorie/go-open-service-broker-client/v2"
-	fakeosb "github.com/pmorie/go-open-service-broker-client/v2/fake"
+	osb "github.com/rifung/go-open-service-broker-client/v2"
+	fakeosb "github.com/rifung/go-open-service-broker-client/v2/fake"
 
 	"github.com/kubernetes-incubator/service-catalog/pkg/apis/servicecatalog/v1alpha1"
 

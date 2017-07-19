@@ -1,4 +1,39 @@
 # Prerequisites
+## Build the service catalog
+You will need to make the repo with the changes and then change the helm charts
+to use your images.
+
+From the root of this repo, to build and push the images, run
+
+```
+export REGISTRY=<GCR_URL>
+
+make build
+make images push
+```
+
+Now, modify the helm chart so that it uses your image. You will need to modify
+charts/catalog/values.yaml so that all the images point to your images instead
+of the things in quay.io.
+
+For example, for a project `test-project`, you would change
+
+```
+  image: quay.io/kubernetes-service-catalog/apiserver:v0.0.11
+```
+
+to be
+
+```
+  image: us.gcr.io/test-project/apiserver
+```
+
+and do the same for the controller manager image as well which as this writing is
+
+```
+  image: quay.io/kubernetes-service-catalog/controller-manager:v0.0.11
+```
+
 Start a Kubernetes cluster and install the service catalog (follow walkthrough.md)
 
 # Register the broker

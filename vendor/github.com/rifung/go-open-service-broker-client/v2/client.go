@@ -192,7 +192,11 @@ func (c *client) handleFailureResponse(response *http.Response) error {
 	glog.Info("handling failure responses")
 	brokerResponse := &failureResponseBody{}
 	if err := c.unmarshalResponse(response, brokerResponse); err != nil {
-		return HTTPStatusCodeError{StatusCode: response.StatusCode, ResponseError: err}
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return HTTPStatusCodeError{StatusCode: response.StatusCode, ResponseError: err}
+		}
+		return HTTPStatusCodeError{StatusCode: response.StatusCode, ResponseError: fmt.Errorf("Got error %v when unmarshalling response body: %s", err, string(body))}
 	}
 
 	return HTTPStatusCodeError{
